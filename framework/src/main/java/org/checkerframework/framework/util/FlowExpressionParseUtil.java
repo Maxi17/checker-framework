@@ -2,7 +2,9 @@ package org.checkerframework.framework.util;
 
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
@@ -50,6 +52,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayCreation;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
@@ -495,6 +498,87 @@ public class FlowExpressionParseUtil {
                                 expr.toString(), "is an unparsable class literal"));
             }
             return StaticJavaParser.parseExpression(expr.getTypeAsString()).accept(this, context);
+        }
+
+        @Override
+        public Receiver visit(ArrayCreationExpr expr, FlowExpressionContext context) {
+            Receiver receiver;
+            if (!expr.getElementType().isPrimitiveType()) {
+                receiver =
+                        StaticJavaParser.parseExpression(expr.getElementType().asString())
+                                .accept(this, context);
+            } else {
+                switch (expr.getElementType().asPrimitiveType().getType()) {
+                    case BOOLEAN:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                boolean.class, types, env.getElementUtils()));
+                        break;
+                    case BYTE:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                byte.class, types, env.getElementUtils()));
+                        break;
+                    case SHORT:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                short.class, types, env.getElementUtils()));
+                        break;
+                    case INT:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                int.class, types, env.getElementUtils()));
+                        break;
+                    case CHAR:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                char.class, types, env.getElementUtils()));
+                        break;
+                    case FLOAT:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                float.class, types, env.getElementUtils()));
+                        break;
+                    case LONG:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                long.class, types, env.getElementUtils()));
+                        break;
+                    case DOUBLE:
+                        receiver =
+                                new ClassName(
+                                        TypesUtils.typeFromClass(
+                                                double.class, types, env.getElementUtils()));
+                        break;
+                    default:
+                        receiver = null;
+                }
+            }
+
+            List<Receiver> dimensions = new ArrayList<>();
+            for (ArrayCreationLevel dimension : expr.getLevels()) {
+                if (dimension.getDimension().isPresent()) {
+                    dimensions.add(dimension.getDimension().get().accept(this, context));
+                } else {
+                    dimensions.add(null);
+                }
+            }
+
+            List<Receiver> initializers = new ArrayList<>();
+            if (expr.getInitializer().isPresent()) {
+                for (Expression initializer : expr.getInitializer().get().getValues()) {
+                    initializers.add(initializer.accept(this, context));
+                }
+            }
+
+            return new ArrayCreation(receiver.getType(), dimensions, initializers);
         }
 
         /**
