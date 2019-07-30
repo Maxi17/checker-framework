@@ -492,75 +492,58 @@ public class FlowExpressionParseUtil {
          */
         @Override
         public Receiver visit(ClassExpr expr, FlowExpressionContext context) {
-            if (!expr.getType().isClassOrInterfaceType()) {
-                throw new ParseRuntimeException(
-                        constructParserException(
-                                expr.toString(), "is an unparsable class literal"));
+            if (expr.getType().isClassOrInterfaceType()) {
+                return StaticJavaParser.parseExpression(expr.getTypeAsString())
+                        .accept(this, context);
+            } else if (expr.getType().isPrimitiveType()) {
+                switch (expr.getType().asPrimitiveType().getType()) {
+                    case BOOLEAN:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(
+                                        boolean.class, types, env.getElementUtils()));
+                    case BYTE:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(byte.class, types, env.getElementUtils()));
+                    case SHORT:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(
+                                        short.class, types, env.getElementUtils()));
+                    case INT:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(int.class, types, env.getElementUtils()));
+                    case CHAR:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(char.class, types, env.getElementUtils()));
+                    case FLOAT:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(
+                                        float.class, types, env.getElementUtils()));
+                    case LONG:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(long.class, types, env.getElementUtils()));
+                    case DOUBLE:
+                        return new ClassName(
+                                TypesUtils.typeFromClass(
+                                        double.class, types, env.getElementUtils()));
+                }
+            } else if (expr.getType().isVoidType()) {
+                return new ClassName(
+                        TypesUtils.typeFromClass(void.class, types, env.getElementUtils()));
             }
-            return StaticJavaParser.parseExpression(expr.getTypeAsString()).accept(this, context);
+
+            throw new ParseRuntimeException(
+                    constructParserException(expr.toString(), "is an unparsable class literal"));
         }
 
         @Override
         public Receiver visit(ArrayCreationExpr expr, FlowExpressionContext context) {
-            Receiver receiver;
-            if (!expr.getElementType().isPrimitiveType()) {
-                receiver =
-                        StaticJavaParser.parseExpression(expr.getElementType().asString())
-                                .accept(this, context);
-            } else {
-                switch (expr.getElementType().asPrimitiveType().getType()) {
-                    case BOOLEAN:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                boolean.class, types, env.getElementUtils()));
-                        break;
-                    case BYTE:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                byte.class, types, env.getElementUtils()));
-                        break;
-                    case SHORT:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                short.class, types, env.getElementUtils()));
-                        break;
-                    case INT:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                int.class, types, env.getElementUtils()));
-                        break;
-                    case CHAR:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                char.class, types, env.getElementUtils()));
-                        break;
-                    case FLOAT:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                float.class, types, env.getElementUtils()));
-                        break;
-                    case LONG:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                long.class, types, env.getElementUtils()));
-                        break;
-                    case DOUBLE:
-                        receiver =
-                                new ClassName(
-                                        TypesUtils.typeFromClass(
-                                                double.class, types, env.getElementUtils()));
-                        break;
-                    default:
-                        receiver = null;
-                }
-            }
+
+            // Parse the type as a class literal
+            Receiver receiver =
+                    visit(
+                            StaticJavaParser.parseExpression(expr.getElementType() + ".class")
+                                    .asClassExpr(),
+                            context);
 
             List<Receiver> dimensions = new ArrayList<>();
             for (ArrayCreationLevel dimension : expr.getLevels()) {
