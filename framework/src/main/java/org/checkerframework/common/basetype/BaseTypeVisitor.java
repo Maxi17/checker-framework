@@ -82,6 +82,8 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -1664,12 +1666,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * }
      */
 
+    private TypeUseLocation getCurrentTypeUseLocation() {
+        return null;
+    }
+
     /**
      * Ensure that the annotation arguments comply to their declarations. This needs some special
      * casing, as annotation arguments form special trees.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
+        AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(node);
+        try {
+            // get the TargetLocations of the annotation
+            TargetLocations targets =
+                    Class.forName(am.getAnnotationType().toString())
+                            .getAnnotation(TargetLocations.class);
+            // if it has a TargetLocations annotation, check if the current type use is within the
+            // arguments
+            if (targets != null
+                    && !Arrays.asList(targets.value()).contains(getCurrentTypeUseLocation())) {
+                // issue an error if not
+                checker.report(Result.failure("annotation.location.disallowed"), node);
+            }
+        } catch (ClassNotFoundException e) {
+            // do nothing
+        }
         List<? extends ExpressionTree> args = node.getArguments();
         if (args.isEmpty()) {
             // Nothing to do if there are no annotation arguments.
