@@ -962,7 +962,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
                 if (AnnotationUtils.areSameByClass(annotationMirror, checkerGuardSatisfiedClass)) {
-                    issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(tree);
+                    //
+                    // issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(tree);
                 }
             }
         }

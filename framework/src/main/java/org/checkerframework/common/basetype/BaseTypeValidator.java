@@ -15,6 +15,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -73,6 +75,20 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
         Result result = isValidType(atypeFactory.getQualifierHierarchy(), type);
+        Tree.Kind kind = tree.getKind();
+        for (AnnotationMirror am : type.getAnnotations()) {
+            try {
+                TypeUseLocation[] uses =
+                        Class.forName(am.getAnnotationType().toString())
+                                .getAnnotation(TargetLocations.class)
+                                .value();
+                //                 if (!Arrays.asList(uses).contains(/* the current use*/)) {
+                //                 issue the warning
+                //                 }
+            } catch (ClassNotFoundException e) {
+                // do nothing for now
+            }
+        }
         if (result.isFailure()) {
             checker.report(result, tree);
             return false;
