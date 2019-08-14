@@ -1667,6 +1667,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
 
     private TypeUseLocation getCurrentTypeUseLocation() {
+        TreePath mainPath = getCurrentPath().getParentPath().getParentPath();
+        switch (mainPath.getLeaf().getKind()) {
+            case VARIABLE:
+                if (mainPath.getParentPath().getLeaf().getKind() == Tree.Kind.CLASS) {
+                    return TypeUseLocation.FIELD;
+                }
+        }
         return null;
     }
 
