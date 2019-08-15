@@ -1668,11 +1668,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     private TypeUseLocation getCurrentTypeUseLocation() {
         TreePath mainPath = getCurrentPath().getParentPath().getParentPath();
-        switch (mainPath.getLeaf().getKind()) {
-            case VARIABLE:
-                if (mainPath.getParentPath().getLeaf().getKind() == Tree.Kind.CLASS) {
+        Element element = trees.getElement(mainPath);
+        if (element != null) {
+            switch (element.getKind()) {
+                case FIELD:
                     return TypeUseLocation.FIELD;
-                }
+                case LOCAL_VARIABLE:
+                    return TypeUseLocation.LOCAL_VARIABLE;
+                case RESOURCE_VARIABLE:
+                    return TypeUseLocation.RESOURCE_VARIABLE;
+                case EXCEPTION_PARAMETER:
+                    return TypeUseLocation.EXCEPTION_PARAMETER;
+                    // case RECEIVER:
+                case PARAMETER:
+                    return TypeUseLocation.PARAMETER;
+                case METHOD:
+                    return TypeUseLocation.RETURN;
+                case CONSTRUCTOR:
+                    return TypeUseLocation.CONSTRUCTOR_RESULT;
+                    // case LOWER_BOUND:
+                    // case IMPLICIT_LOWER_BOUND:
+                    // case EXPLICIT_LOWER_BOUND:
+                    // case UPPER_BOUND:
+                    // case IMPLICIT_UPPER_BOUND:
+                    // case EXPLICIT_UPPER_BOUND:
+                default:
+                    return TypeUseLocation.OTHERWISE;
+            }
         }
         return null;
     }
@@ -1685,15 +1707,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     public Void visitAnnotation(AnnotationTree node, Void p) {
         AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(node);
         try {
-            // get the TargetLocations of the annotation
             TargetLocations targets =
                     Class.forName(am.getAnnotationType().toString())
                             .getAnnotation(TargetLocations.class);
-            // if it has a TargetLocations annotation, check if the current type use is within the
-            // arguments
             if (targets != null
                     && !Arrays.asList(targets.value()).contains(getCurrentTypeUseLocation())) {
-                // issue an error if not
                 checker.report(Result.failure("annotation.location.disallowed"), node);
             }
         } catch (ClassNotFoundException e) {
