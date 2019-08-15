@@ -1679,19 +1679,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     return TypeUseLocation.RESOURCE_VARIABLE;
                 case EXCEPTION_PARAMETER:
                     return TypeUseLocation.EXCEPTION_PARAMETER;
-                    // case RECEIVER:
                 case PARAMETER:
+                    if (element.getSimpleName().contentEquals("this")
+                            || element.getSimpleName().toString().endsWith(".this")) {
+                        return TypeUseLocation.RECEIVER;
+                    }
                     return TypeUseLocation.PARAMETER;
                 case METHOD:
                     return TypeUseLocation.RETURN;
                 case CONSTRUCTOR:
                     return TypeUseLocation.CONSTRUCTOR_RESULT;
-                    // case LOWER_BOUND:
-                    // case IMPLICIT_LOWER_BOUND:
-                    // case EXPLICIT_LOWER_BOUND:
-                    // case UPPER_BOUND:
-                    // case IMPLICIT_UPPER_BOUND:
-                    // case EXPLICIT_UPPER_BOUND:
+                case TYPE_PARAMETER:
+                    if (mainPath.getLeaf().getKind() == Tree.Kind.EXTENDS_WILDCARD) {
+                        return TypeUseLocation.EXPLICIT_UPPER_BOUND;
+                    } else if (mainPath.getLeaf().getKind() == Tree.Kind.SUPER_WILDCARD) {
+                        return TypeUseLocation.EXPLICIT_LOWER_BOUND;
+                    } else if (mainPath.getLeaf().getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
+                        return TypeUseLocation.IMPLICIT_UPPER_BOUND;
+                    }
+                    break;
                 default:
                     return TypeUseLocation.OTHERWISE;
             }
