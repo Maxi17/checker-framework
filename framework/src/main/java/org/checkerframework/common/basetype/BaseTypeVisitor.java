@@ -1668,40 +1668,39 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     private TypeUseLocation getCurrentTypeUseLocation() {
         TreePath mainPath = getCurrentPath().getParentPath().getParentPath();
-        Element element = trees.getElement(mainPath);
-        if (element != null) {
-            switch (element.getKind()) {
-                case FIELD:
-                    return TypeUseLocation.FIELD;
-                case LOCAL_VARIABLE:
-                    return TypeUseLocation.LOCAL_VARIABLE;
-                case RESOURCE_VARIABLE:
-                    return TypeUseLocation.RESOURCE_VARIABLE;
-                case EXCEPTION_PARAMETER:
-                    return TypeUseLocation.EXCEPTION_PARAMETER;
-                case PARAMETER:
-                    if (element.getSimpleName().contentEquals("this")
-                            || element.getSimpleName().toString().endsWith(".this")) {
-                        return TypeUseLocation.RECEIVER;
-                    }
+        Tree tree = mainPath.getLeaf();
+        Tree.Kind kind = tree.getKind();
+        if (kind == Tree.Kind.METHOD) {
+            return TypeUseLocation.RETURN;
+        } else if (kind == Tree.Kind.VARIABLE) {
+            TreePath parentPath = mainPath.getParentPath();
+            if (parentPath.getLeaf().getKind() == Tree.Kind.CLASS) {
+                return TypeUseLocation.FIELD;
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
+                if (tree.toString().equals("this") && tree.toString().equals(".this")) {
+                    return TypeUseLocation.RECEIVER;
+                } else {
                     return TypeUseLocation.PARAMETER;
-                case METHOD:
-                    return TypeUseLocation.RETURN;
-                case CONSTRUCTOR:
-                    return TypeUseLocation.CONSTRUCTOR_RESULT;
-                case TYPE_PARAMETER:
-                    if (mainPath.getLeaf().getKind() == Tree.Kind.EXTENDS_WILDCARD) {
-                        return TypeUseLocation.EXPLICIT_UPPER_BOUND;
-                    } else if (mainPath.getLeaf().getKind() == Tree.Kind.SUPER_WILDCARD) {
-                        return TypeUseLocation.EXPLICIT_LOWER_BOUND;
-                    } else if (mainPath.getLeaf().getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
-                        return TypeUseLocation.IMPLICIT_UPPER_BOUND;
-                    }
-                    break;
-                default:
-                    return TypeUseLocation.OTHERWISE;
+                }
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.BLOCK) {
+                return TypeUseLocation.LOCAL_VARIABLE;
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.TRY) {
+                return TypeUseLocation.RESOURCE_VARIABLE;
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.CATCH) {
+                return TypeUseLocation.EXCEPTION_PARAMETER;
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+                return TypeUseLocation.CONSTRUCTOR_RESULT;
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.EXTENDS_WILDCARD) {
+                return TypeUseLocation.EXPLICIT_UPPER_BOUND;
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.SUPER_WILDCARD) {
+                return TypeUseLocation.EXPLICIT_LOWER_BOUND;
+            } else if (parentPath.getLeaf().getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
+                return TypeUseLocation.IMPLICIT_UPPER_BOUND;
+            } else {
+                return TypeUseLocation.OTHERWISE;
             }
         }
+
         return null;
     }
 
@@ -1716,9 +1715,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             TargetLocations targets =
                     Class.forName(am.getAnnotationType().toString())
                             .getAnnotation(TargetLocations.class);
-            if (targets != null
-                    && !Arrays.asList(targets.value()).contains(getCurrentTypeUseLocation())) {
-                checker.report(Result.failure("annotation.location.disallowed"), node);
+            if (targets != null) {
+                List<TypeUseLocation> targetsList = Arrays.asList(targets.value());
+                if (!targetsList.contains(getCurrentTypeUseLocation())
+                        && !targetsList.contains(TypeUseLocation.ALL)) {
+                    checker.report(Result.failure("annotation.location.disallowed"), node);
+                }
             }
         } catch (ClassNotFoundException e) {
             // do nothing
