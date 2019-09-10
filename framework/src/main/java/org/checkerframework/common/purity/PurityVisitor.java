@@ -3,7 +3,11 @@ package org.checkerframework.common.purity;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -27,9 +31,8 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
     public Void visitMethod(MethodTree node, Void p) {
         boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
         boolean checkPurityAlways = checker.hasOption("suggestPureMethods");
-        boolean checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
 
-        if (checkPurityAnnotations && (anyPurityAnnotation || checkPurityAlways)) {
+        if (anyPurityAnnotation || checkPurityAlways) {
             // check "no" purity
             List<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
             // @Deterministic makes no sense for a void method or constructor
