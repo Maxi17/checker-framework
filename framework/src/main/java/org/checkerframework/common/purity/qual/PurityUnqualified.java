@@ -1,4 +1,4 @@
-package org.checkerframework.common.purity;
+package org.checkerframework.common.purity.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
