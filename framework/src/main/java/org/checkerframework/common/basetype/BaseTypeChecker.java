@@ -26,6 +26,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import org.checkerframework.common.purity.PurityChecker;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -169,10 +170,14 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * <p>The BaseTypeChecker will not modify the list returned by this method.
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers = new LinkedHashSet<>();
         if (shouldResolveReflection()) {
-            return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
+            checkers.add(MethodValChecker.class);
         }
-        return new LinkedHashSet<>();
+        if (super.getOptions().containsKey("checkPurityAnnotations")) {
+            checkers.add(PurityChecker.class);
+        }
+        return checkers;
     }
 
     /** Returns whether or not reflection should be resolved. */
