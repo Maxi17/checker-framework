@@ -32,6 +32,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -420,6 +421,16 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 AnnotatedTypeMirror actualType = itera.next();
                 result = reduce(result, visit(type, actualType));
             }
+            if (itert.hasNext()) {
+                throw new BugInCF(
+                        "PolyCollector.visit: types is longer than polyTypes:%n  types = %s%n  polyTypes = %s%n",
+                        types, polyTypes);
+            }
+            if (itera.hasNext()) {
+                throw new BugInCF(
+                        "PolyCollector.visit: types is shorter than polyTypes:%n  types = %s%n  polyTypes = %s%n",
+                        types, polyTypes);
+            }
             return result;
         }
 
@@ -439,6 +450,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
             if (type.getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) type;
+                if (wildcardType.getExtendsBound().getKind() == TypeKind.WILDCARD) {
+                    wildcardType = (AnnotatedWildcardType) wildcardType.getExtendsBound();
+                }
                 if (wildcardType.isUninferredTypeArgument()) {
                     return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
                 }
