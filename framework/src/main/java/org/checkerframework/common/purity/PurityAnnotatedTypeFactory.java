@@ -8,6 +8,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.purity.qual.PurityUnqualified;
 
+/** Partial documentation to make tests pass */
 public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public PurityAnnotatedTypeFactory(BaseTypeChecker checker) {
