@@ -1,8 +1,7 @@
 package org.checkerframework.common.purity;
 
-import org.checkerframework.common.basetype.BaseTypeChecker;
-
 import java.util.LinkedHashSet;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
  * Perform purity checking only.
