@@ -175,8 +175,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         if (shouldResolveReflection()) {
             checkers.add(MethodValChecker.class);
         }
-        if (getOptions().containsKey("checkPurityAnnotations")
-                || getOptions().containsKey("suggestPureMethods")) {
+        if (shouldCheckPurity()) {
             checkers.add(PurityChecker.class);
         }
         return checkers;
@@ -188,6 +187,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // this.getOptions or this.hasOption
         // also call getSubcheckers, super.getOptions is called here.
         return super.getOptions().containsKey("resolveReflection");
+    }
+
+    private boolean shouldCheckPurity() {
+        return super.getOptions().containsKey("checkPurityAnnotations")
+                || super.getOptions().containsKey("suggestPureMethods");
     }
 
     /**
