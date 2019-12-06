@@ -18,6 +18,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** Default documentation */
 public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
 
     public PurityVisitor(BaseTypeChecker checker) {
