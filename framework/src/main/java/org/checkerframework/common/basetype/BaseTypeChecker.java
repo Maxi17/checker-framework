@@ -170,10 +170,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * <p>The BaseTypeChecker will not modify the list returned by this method.
      */
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers = new LinkedHashSet<>();
         if (shouldResolveReflection()) {
-            return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
+            checkers.add(MethodValChecker.class);
         }
-        return new LinkedHashSet<>();
+        return checkers;
     }
 
     /** Returns whether or not reflection should be resolved. */

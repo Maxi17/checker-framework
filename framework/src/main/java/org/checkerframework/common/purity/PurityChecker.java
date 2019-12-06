@@ -2,6 +2,7 @@ package org.checkerframework.common.purity;
 
 import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
  * Perform purity checking only.
@@ -10,6 +11,11 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  *     flow-sensitive analysis
  */
 public class PurityChecker extends BaseTypeChecker {
+
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new PurityVisitor(this);
+    }
 
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
