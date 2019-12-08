@@ -659,6 +659,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /** Default documentation. */
     private void checkContractsAtMethodDeclaration(
             MethodTree node,
             ExecutableElement methodElement,
@@ -3102,6 +3103,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return result;
         }
 
+        /** Default documentation. */
         private void checkPurity() {
             String msgKey =
                     methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
@@ -3126,6 +3128,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         }
 
+        /** Default documentation. */
         private void checkPreAndPostConditions() {
             String msgKey = methodReference ? "methodref" : "override";
             if (methodReference) {

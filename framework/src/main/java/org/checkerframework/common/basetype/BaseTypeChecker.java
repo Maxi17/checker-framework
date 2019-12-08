@@ -189,6 +189,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return super.getOptions().containsKey("resolveReflection");
     }
 
+    /** Returns whether or not purity checking should be performed. */
     private boolean shouldCheckPurity() {
         return super.getOptions().containsKey("checkPurityAnnotations")
                 || super.getOptions().containsKey("suggestPureMethods");
