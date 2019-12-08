@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -16,7 +15,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -53,7 +51,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
                             atypeFactory,
                             checker.hasOption("assumeSideEffectFree"));
             if (!r.isPure(kinds)) {
-                reportPurityErrors(r, node, kinds);
+                reportPurityErrors(r, kinds);
             }
 
             // Issue a warning if the method is pure, but not annotated
@@ -84,9 +82,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
 
     /** Reports errors found during purity checking. */
     protected void reportPurityErrors(
-            PurityChecker.PurityResult result,
-            MethodTree node,
-            Collection<Pure.Kind> expectedTypes) {
+            PurityChecker.PurityResult result, Collection<Pure.Kind> expectedTypes) {
         assert !result.isPure(expectedTypes);
         Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
         t.removeAll(result.getTypes());
@@ -123,80 +119,6 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
             checker.report(Result.failure(msg, mitree.getMethodSelect()), r.first);
         } else {
             checker.report(Result.failure(msg), r.first);
-        }
-    }
-
-    @Override
-    protected OverrideChecker createOverrideChecker(
-            Tree overriderTree,
-            AnnotatedTypeMirror.AnnotatedExecutableType overrider,
-            AnnotatedTypeMirror overridingType,
-            AnnotatedTypeMirror overridingReturnType,
-            AnnotatedTypeMirror.AnnotatedExecutableType overridden,
-            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
-            AnnotatedTypeMirror overriddenReturnType) {
-        return new PurityOverrideChecker(
-                overriderTree,
-                overrider,
-                overridingType,
-                overridingReturnType,
-                overridden,
-                overriddenType,
-                overriddenReturnType);
-    }
-
-    protected class PurityOverrideChecker extends OverrideChecker {
-
-        public PurityOverrideChecker(
-                Tree overriderTree,
-                AnnotatedTypeMirror.AnnotatedExecutableType overrider,
-                AnnotatedTypeMirror overridingType,
-                AnnotatedTypeMirror overridingReturnType,
-                AnnotatedTypeMirror.AnnotatedExecutableType overridden,
-                AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
-                AnnotatedTypeMirror overriddenReturnType) {
-            super(
-                    overriderTree,
-                    overrider,
-                    overridingType,
-                    overridingReturnType,
-                    overridden,
-                    overriddenType,
-                    overriddenReturnType);
-        }
-
-        @Override
-        public boolean checkOverride() {
-            if (checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
-                return true;
-            }
-
-            checkPurity();
-            return super.checkOverride();
-        }
-
-        private void checkPurity() {
-            String msgKey =
-                    methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
-
-            // check purity annotations
-            Set<Pure.Kind> superPurity =
-                    new HashSet<>(
-                            PurityUtils.getPurityKinds(atypeFactory, overridden.getElement()));
-            Set<Pure.Kind> subPurity =
-                    new HashSet<>(PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
-            if (!subPurity.containsAll(superPurity)) {
-                checker.report(
-                        Result.failure(
-                                msgKey,
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                subPurity,
-                                superPurity),
-                        overriderTree);
-            }
         }
     }
 }
