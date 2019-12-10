@@ -13,7 +13,7 @@ import org.checkerframework.common.purity.qual.SideEffectFree;
 import org.checkerframework.common.purity.qual.TerminatesExecution;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-/** Partial documentation to make tests pass */
+/** The Purity Checker is used to determine if methods are deterministic and side-effect-free. */
 public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public PurityAnnotatedTypeFactory(BaseTypeChecker checker) {
