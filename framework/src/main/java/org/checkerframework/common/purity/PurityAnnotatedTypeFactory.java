@@ -20,23 +20,20 @@ public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         addAliasedAnnotation(
-                Pure.class,
-                AnnotationBuilder.fromClass(
-                        getElementUtils(), org.checkerframework.dataflow.qual.Pure.class));
+                org.checkerframework.dataflow.qual.Pure.class,
+                AnnotationBuilder.fromClass(getElementUtils(), Pure.class));
         addAliasedAnnotation(
-                Deterministic.class,
-                AnnotationBuilder.fromClass(
-                        getElementUtils(), org.checkerframework.dataflow.qual.Deterministic.class));
+                org.checkerframework.dataflow.qual.Deterministic.class,
+                AnnotationBuilder.fromClass(getElementUtils(), Deterministic.class));
         addAliasedAnnotation(
-                SideEffectFree.class,
-                AnnotationBuilder.fromClass(
-                        getElementUtils(),
-                        org.checkerframework.dataflow.qual.SideEffectFree.class));
+                org.checkerframework.dataflow.qual.SideEffectFree.class,
+                AnnotationBuilder.fromClass(getElementUtils(), SideEffectFree.class));
         addAliasedAnnotation(
-                TerminatesExecution.class,
-                AnnotationBuilder.fromClass(
-                        getElementUtils(),
-                        org.checkerframework.dataflow.qual.TerminatesExecution.class));
+                org.checkerframework.dataflow.qual.TerminatesExecution.class,
+                AnnotationBuilder.fromClass(getElementUtils(), TerminatesExecution.class));
+        addAliasedAnnotation(
+                org.checkerframework.framework.util.PurityUnqualified.class,
+                AnnotationBuilder.fromClass(getElementUtils(), PurityUnqualified.class));
 
         this.postInit();
     }

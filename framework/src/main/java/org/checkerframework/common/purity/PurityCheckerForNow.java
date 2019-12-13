@@ -1,4 +1,4 @@
-package org.checkerframework.dataflow.util;
+package org.checkerframework.common.purity;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -35,7 +36,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * @see Deterministic
  * @see Pure
  */
-public class PurityChecker {
+public class PurityCheckerForNow {
 
     /**
      * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
@@ -51,7 +52,7 @@ public class PurityChecker {
     }
 
     /**
-     * Result of the {@link PurityChecker}. Can be queried regarding whether a given tree was
+     * Result of the {@link PurityCheckerForNow}. Can be queried regarding whether a given tree was
      * side-effect-free, deterministic, or both; also gives reasons if the answer is "no".
      */
     public static class PurityResult {
@@ -124,7 +125,7 @@ public class PurityChecker {
     // TODO: It would be possible to improve efficiency by visiting fewer nodes.  This would require
     // overriding more visit* methods.  I'm not sure whether such an optimization would be worth it.
 
-    /** Helper class to keep {@link PurityChecker}'s interface clean. */
+    /** Helper class to keep {@link PurityCheckerForNow}'s interface clean. */
     protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
         PurityResult purityResult = new PurityResult();
@@ -234,6 +235,7 @@ public class PurityChecker {
             return super.visitAssignment(node, ignore);
         }
 
+        /** Default documentation. */
         protected void assignmentCheck(ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
                 // rhs is a field access
@@ -247,6 +249,7 @@ public class PurityChecker {
             }
         }
 
+        /** Default documentation. */
         protected boolean isLocalVariable(ExpressionTree variable) {
             return variable instanceof IdentifierTree && !TreeUtils.isFieldAccess(variable);
         }

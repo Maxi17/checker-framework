@@ -72,8 +72,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -3098,34 +3096,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 result &= checkReceiverOverride();
             }
             checkPreAndPostConditions();
-            checkPurity();
 
             return result;
-        }
-
-        /** Checks purity rules for overriding. */
-        private void checkPurity() {
-            String msgKey =
-                    methodReference ? "purity.invalid.methodref" : "purity.invalid.overriding";
-
-            // check purity annotations
-            Set<Pure.Kind> superPurity =
-                    new HashSet<>(
-                            PurityUtils.getPurityKinds(atypeFactory, overridden.getElement()));
-            Set<Pure.Kind> subPurity =
-                    new HashSet<>(PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
-            if (!subPurity.containsAll(superPurity)) {
-                checker.report(
-                        Result.failure(
-                                msgKey,
-                                overriderMeth,
-                                overriderTyp,
-                                overriddenMeth,
-                                overriddenTyp,
-                                subPurity,
-                                superPurity),
-                        overriderTree);
-            }
         }
 
         /** Default documentation. */
