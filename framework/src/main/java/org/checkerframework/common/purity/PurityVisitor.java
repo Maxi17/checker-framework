@@ -123,6 +123,7 @@ public class PurityVisitor extends BaseTypeVisitor<PurityAnnotatedTypeFactory> {
         }
     }
 
+    /** Default documentation. */
     @Override
     protected OverrideChecker createOverrideChecker(
             Tree overriderTree,
