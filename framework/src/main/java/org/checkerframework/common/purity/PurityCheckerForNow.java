@@ -9,28 +9,20 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
 import javax.lang.model.element.Element;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A visitor that determines the purity (as defined by {@link
  * org.checkerframework.dataflow.qual.SideEffectFree}, {@link
  * org.checkerframework.dataflow.qual.Deterministic}, and {@link
- * org.checkerframework.dataflow.qual.Pure}) of a statement or expression. The entry point is method
- * {@link #checkPurity}.
+ * org.checkerframework.dataflow.qual.Pure}) of a statement or expression.
  *
  * @see SideEffectFree
  * @see Deterministic
@@ -38,97 +30,13 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityCheckerForNow {
 
-    /**
-     * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
-     * result that can be queried.
-     */
-    public static PurityResult checkPurity(
-            TreePath statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
-        PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider, assumeSideEffectFree);
-        if (statement != null) {
-            helper.scan(statement, null);
-        }
-        return helper.purityResult;
-    }
-
-    /**
-     * Result of the {@link PurityCheckerForNow}. Can be queried regarding whether a given tree was
-     * side-effect-free, deterministic, or both; also gives reasons if the answer is "no".
-     */
-    public static class PurityResult {
-
-        protected final List<Pair<Tree, String>> notSEFreeReasons;
-        protected final List<Pair<Tree, String>> notDetReasons;
-        protected final List<Pair<Tree, String>> notBothReasons;
-        /**
-         * Contains all the varieties of purity that the expression has. Starts out with all
-         * varieties, and elements are removed from it as violations are found.
-         */
-        protected EnumSet<Pure.Kind> types;
-
-        public PurityResult() {
-            notSEFreeReasons = new ArrayList<>();
-            notDetReasons = new ArrayList<>();
-            notBothReasons = new ArrayList<>();
-            types = EnumSet.allOf(Pure.Kind.class);
-        }
-
-        public EnumSet<Pure.Kind> getTypes() {
-            return types;
-        }
-
-        /**
-         * Is the method pure w.r.t. a given set of types?
-         *
-         * @param kinds the varieties of purity to check
-         * @return true if the method is pure with respect to all the given kinds
-         */
-        public boolean isPure(Collection<Kind> kinds) {
-            return types.containsAll(kinds);
-        }
-
-        /** Get the reasons why the method is not side-effect-free. */
-        public List<Pair<Tree, String>> getNotSEFreeReasons() {
-            return notSEFreeReasons;
-        }
-
-        /** Add a reason why the method is not side-effect-free. */
-        public void addNotSEFreeReason(Tree t, String msgId) {
-            notSEFreeReasons.add(Pair.of(t, msgId));
-            types.remove(Kind.SIDE_EFFECT_FREE);
-        }
-
-        /** Get the reasons why the method is not deterministic. */
-        public List<Pair<Tree, String>> getNotDetReasons() {
-            return notDetReasons;
-        }
-
-        /** Add a reason why the method is not deterministic. */
-        public void addNotDetReason(Tree t, String msgId) {
-            notDetReasons.add(Pair.of(t, msgId));
-            types.remove(Kind.DETERMINISTIC);
-        }
-
-        /** Get the reasons why the method is not both side-effect-free and deterministic. */
-        public List<Pair<Tree, String>> getNotBothReasons() {
-            return notBothReasons;
-        }
-
-        /** Add a reason why the method is not both side-effect-free and deterministic. */
-        public void addNotBothReason(Tree t, String msgId) {
-            notBothReasons.add(Pair.of(t, msgId));
-            types.remove(Kind.DETERMINISTIC);
-            types.remove(Kind.SIDE_EFFECT_FREE);
-        }
-    }
-
     // TODO: It would be possible to improve efficiency by visiting fewer nodes.  This would require
     // overriding more visit* methods.  I'm not sure whether such an optimization would be worth it.
 
     /** Helper class to keep {@link PurityCheckerForNow}'s interface clean. */
     protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
-        PurityResult purityResult = new PurityResult();
+        PurityVisitor.PurityResult purityResult = new PurityVisitor.PurityResult();
 
         protected final AnnotationProvider annoProvider;
 
