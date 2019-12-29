@@ -657,7 +657,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** Default documentation. */
+    /** Checks if a method declaration is valid. */
     private void checkContractsAtMethodDeclaration(
             MethodTree node,
             ExecutableElement methodElement,
@@ -3100,7 +3100,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return result;
         }
 
-        /** Default documentation. */
+        /** Helper method for checkOverride. Checks the preconditions and postconditions. */
         private void checkPreAndPostConditions() {
             String msgKey = methodReference ? "methodref" : "override";
             if (methodReference) {
