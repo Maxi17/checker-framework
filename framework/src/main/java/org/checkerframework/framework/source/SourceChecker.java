@@ -281,7 +281,8 @@ import org.checkerframework.javacutil.UserError;
 
     // Whether to check that the annotated JDK is correctly provided
     // org.checkerframework.common.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
-    "nocheckjdk",
+    "permitMissingJdk",
+    "nocheckjdk", // temporary, for backward compatibility
 
     // Whether to print debugging messages while processing the stub files
     // org.checkerframework.framework.stub.StubParser.debugStubParser
@@ -925,9 +926,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.messages = getMessages();
 
         this.visitor = createSourceVisitor();
-
-        // TODO: hack to clear out static caches.
-        AnnotationUtils.clear();
     }
 
     /**
@@ -1148,6 +1146,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
                 swTree);
     }
 
+    /** The name of the @SuppressWarnings annotation. */
+    private final String suppressWarningsClassName = SuppressWarnings.class.getCanonicalName();
     /**
      * Finds the tree that is a {@code @SuppressWarnings} annotation.
      *
@@ -1165,9 +1165,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         }
 
         for (AnnotationTree annotationTree : annotations) {
-            if (AnnotationUtils.areSameByClass(
+            if (AnnotationUtils.areSameByName(
                     TreeUtils.annotationFromAnnotationTree(annotationTree),
-                    SuppressWarnings.class)) {
+                    suppressWarningsClassName)) {
                 return annotationTree;
             }
         }
